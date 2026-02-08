@@ -5,7 +5,7 @@ namespace Game.Core
 {
     public class ServiceLocator
     {
-        private static readonly Dictionary<Type, object> _services = new Dictionary<Type, object>();
+        private readonly Dictionary<Type, object> _services = new Dictionary<Type, object>();
         private static ServiceLocator _instance;
 
         public static ServiceLocator Instance
@@ -25,7 +25,7 @@ namespace Game.Core
             _services[typeof(T)] = service;
         }
 
-        public static T GetService<T>()
+        public T GetService<T>()
         {
             if (_services.TryGetValue(typeof(T), out var service))
             {
@@ -34,7 +34,7 @@ namespace Game.Core
             throw new InvalidOperationException($"Service of type {typeof(T)} is not registered.");
         }
 
-        public static bool HasService<T>()
+        public bool HasService<T>()
         {
             return _services.ContainsKey(typeof(T));
         }

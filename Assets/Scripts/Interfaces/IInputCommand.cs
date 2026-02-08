@@ -22,7 +22,7 @@ namespace Game.Input
         public void Execute()
         {
             // Implementation will be handled by the active controller
-            ServiceLocator.GetService<InputController>().HandleMove(_direction, _isSprinting);
+            ServiceLocator.Instance.GetService<InputController>().HandleMove(_direction, _isSprinting);
         }
     }
 
@@ -37,7 +37,7 @@ namespace Game.Input
 
         public void Execute()
         {
-            ServiceLocator.GetService<InputController>().HandleLook(_lookDirection);
+            ServiceLocator.Instance.GetService<InputController>().HandleLook(_lookDirection);
         }
     }
 
@@ -45,7 +45,7 @@ namespace Game.Input
     {
         public void Execute()
         {
-            ServiceLocator.GetService<InputController>().HandleInteract();
+            ServiceLocator.Instance.GetService<InputController>().HandleInteract();
         }
     }
 
@@ -60,7 +60,7 @@ namespace Game.Input
 
         public void Execute()
         {
-            ServiceLocator.GetService<InputController>().HandleBrake(_isBraking);
+            ServiceLocator.Instance.GetService<InputController>().HandleBrake(_isBraking);
         }
     }
 }

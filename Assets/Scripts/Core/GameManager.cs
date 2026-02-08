@@ -9,21 +9,20 @@ namespace Game.Core
     {
         public static GameManager Instance { get; private set; }
 
-        [Header("Player Setup")]
-        [SerializeField] private GameObject _playerPrefab;
+        [Header("Player Setup")] [SerializeField]
+        private GameObject _playerPrefab;
+
         [SerializeField] private Transform _playerSpawnPoint;
 
-        [Header("Camera Setup")]
-        [SerializeField] private Camera _playerCamera;
-        [SerializeField] private Camera _carCamera;
-
-        [Header("UI")]
-        [SerializeField] private GameObject _interactionPrompt;
+        [Header("UI")] [SerializeField] private GameObject _interactionPrompt;
 
         private ControlMode _currentControlMode;
         private PlayerMoving _playerMoving;
         private CarMoving _currentCar;
+        private ThirdPersonCamera _thirdPersonCamera;
         private InputController _inputController;
+
+        private Transform _currentPerson;
 
         public ControlMode CurrentControlMode => _currentControlMode;
         public PlayerMoving PlayerMoving => _playerMoving;
@@ -41,6 +40,10 @@ namespace Game.Core
                 Destroy(gameObject);
                 return;
             }
+
+
+            // Register services
+            ServiceLocator.Instance.RegisterService<GameManager>(this);
         }
 
         private void Start()
@@ -54,17 +57,16 @@ namespace Game.Core
             UpdateInteractionPrompt();
         }
 
+
         private void InitializeGame()
         {
-            // Register services
-            ServiceLocator.Instance.RegisterService<GameManager>(this);
-            
             // Find or spawn player
             if (_playerMoving == null)
             {
                 if (_playerPrefab != null)
                 {
-                    GameObject player = Instantiate(_playerPrefab, _playerSpawnPoint.position, _playerSpawnPoint.rotation);
+                    GameObject player = Instantiate(_playerPrefab, _playerSpawnPoint.position,
+                        _playerSpawnPoint.rotation);
                     _playerMoving = player.GetComponent<PlayerMoving>();
                 }
                 else
@@ -74,7 +76,8 @@ namespace Game.Core
             }
 
             // Get input controller
-            _inputController = ServiceLocator.GetService<InputController>();
+            _inputController = ServiceLocator.Instance.GetService<InputController>();
+            _thirdPersonCamera = ServiceLocator.Instance.GetService<ThirdPersonCamera>();
 
             // Set initial control mode
             _currentControlMode = ControlMode.Player;
@@ -86,14 +89,14 @@ namespace Game.Core
             switch (_currentControlMode)
             {
                 case ControlMode.Player:
-                    if (_playerCamera != null) _playerCamera.gameObject.SetActive(true);
-                    if (_carCamera != null) _carCamera.gameObject.SetActive(false);
+                    _currentPerson = _playerMoving.transform;
                     break;
                 case ControlMode.Car:
-                    if (_playerCamera != null) _playerCamera.gameObject.SetActive(false);
-                    if (_carCamera != null) _carCamera.gameObject.SetActive(true);
+                    _currentPerson = _currentCar.transform;
                     break;
             }
+
+            _thirdPersonCamera.SetTarget(_currentPerson);
         }
 
         private void HandleInteractionInput()
@@ -109,7 +112,7 @@ namespace Game.Core
             if (_interactionPrompt != null)
             {
                 bool showPrompt = false;
-                
+
                 if (_currentControlMode == ControlMode.Player && _playerMoving != null)
                 {
                     showPrompt = _playerMoving.CanInteract && _playerMoving.NearbyCar != null;
@@ -141,7 +144,7 @@ namespace Game.Core
             if (_playerMoving != null && _playerMoving.CanInteract && _playerMoving.NearbyCar != null)
             {
                 _currentCar = _playerMoving.NearbyCar.GetComponent<CarMoving>();
-                
+
                 if (_currentCar != null)
                 {
                     EnterCar();
@@ -210,7 +213,8 @@ namespace Game.Core
             {
                 Gizmos.color = Color.green;
                 Gizmos.DrawWireSphere(_playerSpawnPoint.position, 0.5f);
-                Gizmos.DrawLine(_playerSpawnPoint.position, _playerSpawnPoint.position + _playerSpawnPoint.forward * 2f);
+                Gizmos.DrawLine(_playerSpawnPoint.position,
+                    _playerSpawnPoint.position + _playerSpawnPoint.forward * 2f);
             }
         }
     }

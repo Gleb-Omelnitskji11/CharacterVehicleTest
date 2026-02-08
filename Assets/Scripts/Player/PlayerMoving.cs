@@ -6,122 +6,119 @@ namespace Game.Player
 {
     public class PlayerMoving : MonoBehaviour
     {
+        private static readonly int Sprint = Animator.StringToHash(ANIMATOR_Sprint);
+        private static readonly int Moving = Animator.StringToHash(ANIMATOR_Moving);
+
+        private const string ANIMATOR_Moving = "Moving";
+        private const string ANIMATOR_Sprint = "Sprint";
+
         [Header("Movement Settings")]
         [SerializeField] private float _walkSpeed = 5f;
         [SerializeField] private float _sprintSpeed = 8f;
         [SerializeField] private float _rotationSpeed = 10f;
-        [SerializeField] private float _gravity = -9.81f;
-        [SerializeField] private float _groundCheckDistance = 0.4f;
-        [SerializeField] private LayerMask _groundMask;
 
         [Header("Animation")]
         [SerializeField] private Animator _animator;
-        [SerializeField] private float _animationSmoothTime = 0.1f;
 
         [Header("Interaction")]
         [SerializeField] private float _interactionRadius = 3f;
         [SerializeField] private LayerMask _carLayer;
 
-        private CharacterController _characterController;
+        [Header("Other")]
+        [SerializeField] private CharacterController _characterController;
         private InputController _inputController;
-        private Camera _mainCamera;
+        private Camera _camera;
         private Vector3 _velocity;
-        private bool _isGrounded;
         private float _currentSpeed;
-        private float _animationBlend;
 
-        private const string ANIMATOR_SPEED = "Speed";
-        private const string ANIMATOR_IS_GROUNDED = "IsGrounded";
-
+        private bool _animationMoving;
+        private bool _animationSprint;
+        private GameManager _gameManager;
         public bool CanInteract { get; private set; }
         public GameObject NearbyCar { get; private set; }
 
-        private void Awake()
-        {
-            _characterController = GetComponent<CharacterController>();
-            _animator = GetComponent<Animator>();
-        }
-
         private void Start()
         {
-            _inputController = ServiceLocator.GetService<InputController>();
-            _mainCamera = Camera.main;
+            _inputController = ServiceLocator.Instance.GetService<InputController>();
+            _camera = Camera.main;
             _currentSpeed = _walkSpeed;
+            _gameManager = ServiceLocator.Instance.GetService<GameManager>();
         }
 
         private void Update()
         {
-            if (!ServiceLocator.HasService<GameManager>() || 
-                ServiceLocator.GetService<GameManager>().CurrentControlMode != ControlMode.Player)
+            if (_gameManager.CurrentControlMode != ControlMode.Player)
                 return;
 
-            CheckGround();
-            HandleMovement();
-            HandleRotation();
-            ApplyGravity();
-            CheckForNearbyCars();
+            Vector3 moveDirection;
+            HandleMovement(out moveDirection);
+            HandleCharacterRotation(ref moveDirection);
+            //CheckForNearbyCars();
             UpdateAnimations();
         }
 
-        private void CheckGround()
-        {
-            Vector3 spherePosition = transform.position + Vector3.up * _groundCheckDistance;
-            _isGrounded = Physics.CheckSphere(spherePosition, _groundCheckDistance, _groundMask);
-
-            if (_isGrounded && _velocity.y < 0)
-            {
-                _velocity.y = -2f;
-            }
-        }
-
-        private void HandleMovement()
+        private void HandleMovement(out Vector3 moveDirection)
         {
             Vector2 moveInput = _inputController.MoveDirection;
-            bool isSprinting = _inputController.IsSprinting;
+            _animationSprint = _inputController.IsSprinting;
+            _animationMoving = moveInput.sqrMagnitude > 0;
 
             // Calculate target speed
-            float targetSpeed = isSprinting ? _sprintSpeed : _walkSpeed;
+            float targetSpeed = _animationSprint ? _sprintSpeed : _walkSpeed;
             _currentSpeed = Mathf.Lerp(_currentSpeed, targetSpeed, Time.deltaTime * 10f);
 
             // Get camera-relative movement direction
-            Vector3 moveDirection = new Vector3(moveInput.x, 0, moveInput.y);
-            moveDirection = _mainCamera.transform.forward * moveDirection.z + _mainCamera.transform.right * moveDirection.x;
+            moveDirection = new Vector3(moveInput.x, 0, moveInput.y);
+            // moveDirection = transform.forward * moveDirection.z +
+            //                 transform.right * moveDirection.x;
             moveDirection.y = 0;
             moveDirection.Normalize();
 
             // Apply movement
             Vector3 movement = moveDirection * _currentSpeed * Time.deltaTime;
             _characterController.Move(movement);
-
-            // Update animation blend
-            _animationBlend = Mathf.Lerp(_animationBlend, moveDirection.magnitude, Time.deltaTime / _animationSmoothTime);
         }
 
         private void HandleRotation()
         {
             Vector2 moveInput = _inputController.MoveDirection;
-            
-            if (moveInput.magnitude > 0.1f)
-            {
-                // Get camera-relative movement direction
-                Vector3 moveDirection = new Vector3(moveInput.x, 0, moveInput.y);
-                moveDirection = _mainCamera.transform.forward * moveDirection.z + _mainCamera.transform.right * moveDirection.x;
-                moveDirection.y = 0;
-                moveDirection.Normalize();
 
-                // Rotate towards movement direction
-                if (moveDirection != Vector3.zero)
-                {
-                    Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
-                }
-            }
+            if (moveInput.sqrMagnitude < 0.01f)
+                return;
+
+            Vector3 camForward = _camera.transform.forward;
+            Vector3 camRight = _camera.transform.right;
+
+            camForward.y = 0f;
+            camRight.y = 0f;
+
+            Vector3 moveDirection =
+                camForward * moveInput.y +
+                camRight * moveInput.x;
+
+            if (moveDirection.sqrMagnitude < 0.001f)
+                return;
+
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                _rotationSpeed * Time.deltaTime
+            );
         }
-
-        private void ApplyGravity()
+        
+        private void HandleCharacterRotation(ref Vector3 moveDirection)
         {
-            _velocity.y += _gravity * Time.deltaTime;
-            _characterController.Move(_velocity * Time.deltaTime);
+            if (moveDirection.sqrMagnitude < 0.001f)
+                return;
+
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                _rotationSpeed * Time.deltaTime
+            );
         }
 
         private void CheckForNearbyCars()
@@ -143,11 +140,8 @@ namespace Game.Player
 
         private void UpdateAnimations()
         {
-            if (_animator != null)
-            {
-                _animator.SetFloat(ANIMATOR_SPEED, _animationBlend);
-                _animator.SetBool(ANIMATOR_IS_GROUNDED, _isGrounded);
-            }
+            _animator.SetBool(Moving, _animationMoving);
+            _animator.SetBool(Sprint, _animationSprint);
         }
 
         public void EnterCar()
@@ -161,16 +155,16 @@ namespace Game.Player
             gameObject.SetActive(true);
         }
 
-        private void OnDrawGizmosSelected()
-        {
-            // Draw interaction radius
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, _interactionRadius);
-
-            // Draw ground check
-            Gizmos.color = Color.green;
-            Vector3 spherePosition = transform.position + Vector3.up * _groundCheckDistance;
-            Gizmos.DrawWireSphere(spherePosition, _groundCheckDistance);
-        }
+        // private void OnDrawGizmosSelected()
+        // {
+        //     // Draw interaction radius
+        //     Gizmos.color = Color.yellow;
+        //     Gizmos.DrawWireSphere(transform.position, _interactionRadius);
+        //
+        //     // Draw ground check
+        //     Gizmos.color = Color.green;
+        //     Vector3 spherePosition = transform.position + Vector3.up * _groundCheckDistance;
+        //     Gizmos.DrawWireSphere(spherePosition, _groundCheckDistance);
+        // }
     }
 }

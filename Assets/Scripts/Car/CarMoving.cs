@@ -29,11 +29,6 @@ namespace Game.Car
         [Header("Center of Mass")]
         [SerializeField] private Transform _centerOfMass;
 
-        [Header("Audio")]
-        [SerializeField] private AudioSource _engineAudio;
-        [SerializeField] private float _minEnginePitch = 0.8f;
-        [SerializeField] private float _maxEnginePitch = 2f;
-
         private InputController _inputController;
         private Rigidbody _rigidbody;
         private float _currentSpeed;
@@ -57,31 +52,24 @@ namespace Game.Car
 
         private void Start()
         {
-            _inputController = ServiceLocator.GetService<InputController>();
+            _inputController = ServiceLocator.Instance.GetService<InputController>();
             SetupCarPhysics();
             SetupWheels();
         }
 
         private void Update()
         {
-            if (!ServiceLocator.HasService<GameManager>() || 
-                ServiceLocator.GetService<GameManager>().CurrentControlMode != ControlMode.Car)
-                return;
-
-            HandleInput();
-            UpdateCarPhysics();
-            UpdateWheelVisuals();
-            UpdateEngineAudio();
+            // if (!ServiceLocator.HasService<GameManager>() || 
+            //     ServiceLocator.GetService<GameManager>().CurrentControlMode != ControlMode.Car)
+            //     return;
+            //
+            // HandleInput();
+            // UpdateCarPhysics();
+            // UpdateWheelVisuals();
         }
 
         private void SetupCarPhysics()
         {
-            // Adjust center of mass for better stability
-            if (_centerOfMass != null)
-            {
-                _rigidbody.centerOfMass = _centerOfMass.localPosition;
-            }
-
             // Set rigidbody constraints for realistic car behavior
             _rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         }
@@ -103,7 +91,6 @@ namespace Game.Car
 
                     wheel.suspensionDistance = _suspensionDistance;
                     wheel.radius = 0.3f;
-                    wheel.mass = 20f;
                     wheel.wheelDampingRate = 0.25f;
                     wheel.forwardFriction = SetFrictionCurve(1.2f, 2f, 0.02f);
                     wheel.sidewaysFriction = SetFrictionCurve(1.5f, 2f, 0.02f);
@@ -220,17 +207,6 @@ namespace Game.Car
                 collider.GetWorldPose(out position, out rotation);
                 transform.position = position;
                 transform.rotation = rotation;
-            }
-        }
-
-        private void UpdateEngineAudio()
-        {
-            if (_engineAudio != null)
-            {
-                float speedRatio = _currentSpeed / _maxSpeed;
-                float targetPitch = Mathf.Lerp(_minEnginePitch, _maxEnginePitch, speedRatio);
-                _engineAudio.pitch = Mathf.Lerp(_engineAudio.pitch, targetPitch, Time.deltaTime * 5f);
-                _engineAudio.volume = Mathf.Lerp(0.3f, 1f, speedRatio);
             }
         }
 

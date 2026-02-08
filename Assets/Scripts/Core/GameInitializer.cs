@@ -21,7 +21,7 @@ namespace Game.Core
         private void InitializeServices()
         {
             // Initialize InputController
-            if (!ServiceLocator.HasService<InputController>())
+            if (!ServiceLocator.Instance.HasService<InputController>())
             {
                 GameObject inputControllerObj;
                 
@@ -40,7 +40,7 @@ namespace Game.Core
             }
 
             // Initialize GameManager
-            if (!ServiceLocator.HasService<GameManager>())
+            if (!ServiceLocator.Instance.HasService<GameManager>())
             {
                 GameObject gameManagerObj;
                 

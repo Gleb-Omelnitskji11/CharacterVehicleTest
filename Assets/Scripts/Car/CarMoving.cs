@@ -44,6 +44,7 @@ namespace Game.Car
         [SerializeField] private float _suspensionSpring = 35000f;
         [SerializeField] private float _suspensionDamper = 4500f;
         [SerializeField] private float _suspensionTargetPosition = 0.5f;
+        private GameManager _gameManager;
 
         private void Awake()
         {
@@ -53,25 +54,25 @@ namespace Game.Car
         private void Start()
         {
             _inputController = ServiceLocator.Instance.GetService<InputController>();
+            _gameManager = ServiceLocator.Instance.GetService<GameManager>();
             SetupCarPhysics();
             SetupWheels();
         }
 
         private void Update()
         {
-            // if (!ServiceLocator.HasService<GameManager>() || 
-            //     ServiceLocator.GetService<GameManager>().CurrentControlMode != ControlMode.Car)
-            //     return;
-            //
-            // HandleInput();
-            // UpdateCarPhysics();
-            // UpdateWheelVisuals();
+            if (_gameManager.CurrentControlMode != ControlMode.Car)
+                return;
+            
+            HandleInput();
+            UpdateCarPhysics();
+            UpdateWheelVisuals();
         }
 
         private void SetupCarPhysics()
         {
             // Set rigidbody constraints for realistic car behavior
-            _rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            //_rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         }
 
         private void SetupWheels()
@@ -212,12 +213,12 @@ namespace Game.Car
 
         public void EnterCar()
         {
-            gameObject.SetActive(true);
+            //gameObject.SetActive(true);
         }
 
         public void ExitCar()
         {
-            gameObject.SetActive(false);
+            //gameObject.SetActive(false);
         }
 
         public Vector3 GetExitPosition()
@@ -231,8 +232,8 @@ namespace Game.Car
             // Draw center of mass
             if (_centerOfMass != null)
             {
-                Gizmos.color = Color.red;
-                Gizmos.DrawSphere(_centerOfMass.position, 0.1f);
+                //Gizmos.color = Color.red;
+                //Gizmos.DrawSphere(_centerOfMass.position, 0.1f);
             }
         }
     }

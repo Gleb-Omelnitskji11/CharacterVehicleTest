@@ -16,6 +16,10 @@ namespace Game.Player
         [SerializeField] private float _walkSpeed = 5f;
         [SerializeField] private float _sprintSpeed = 8f;
         [SerializeField] private float _rotationSpeed = 10f;
+        
+        [Header("Gravity")]
+        [SerializeField] private float _gravity = -20f;
+        [SerializeField] private float _groundedStickForce = -2f;
 
         [Header("Animation")]
         [SerializeField] private Animator _animator;
@@ -53,6 +57,7 @@ namespace Game.Player
             Vector3 moveDirection;
             HandleMovement(out moveDirection);
             HandleCharacterRotation(ref moveDirection);
+            HandleGravity();
             //CheckForNearbyCars();
             UpdateAnimations();
         }
@@ -69,42 +74,26 @@ namespace Game.Player
 
             // Get camera-relative movement direction
             moveDirection = new Vector3(moveInput.x, 0, moveInput.y);
-            // moveDirection = transform.forward * moveDirection.z +
-            //                 transform.right * moveDirection.x;
-            moveDirection.y = 0;
             moveDirection.Normalize();
 
             // Apply movement
             Vector3 movement = moveDirection * _currentSpeed * Time.deltaTime;
             _characterController.Move(movement);
         }
-
-        private void HandleRotation()
+        
+        private void HandleGravity()
         {
-            Vector2 moveInput = _inputController.MoveDirection;
+            if (_characterController.isGrounded)
+            {
+                if (_velocity.y < 0)
+                    _velocity.y = _groundedStickForce;
+            }
+            else
+            {
+                _velocity.y += _gravity * Time.deltaTime;
+            }
 
-            if (moveInput.sqrMagnitude < 0.01f)
-                return;
-
-            Vector3 camForward = _camera.transform.forward;
-            Vector3 camRight = _camera.transform.right;
-
-            camForward.y = 0f;
-            camRight.y = 0f;
-
-            Vector3 moveDirection =
-                camForward * moveInput.y +
-                camRight * moveInput.x;
-
-            if (moveDirection.sqrMagnitude < 0.001f)
-                return;
-
-            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRotation,
-                _rotationSpeed * Time.deltaTime
-            );
+            _characterController.Move(_velocity * Time.deltaTime);
         }
         
         private void HandleCharacterRotation(ref Vector3 moveDirection)

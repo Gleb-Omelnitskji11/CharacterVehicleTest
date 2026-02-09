@@ -2,16 +2,11 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Core;
 
-using System;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
-
 namespace Game.Input
 {
     public class InputController : MonoBehaviour
     {
-        private InputAction _inputActions;
+        private InputSystem_Actions _inputActions;
         private Vector2 _moveDirection;
         private Vector2 _lookDirection;
         private bool _isSprinting;
@@ -33,7 +28,7 @@ namespace Game.Input
         private void OnEnable()
         {
             _inputActions.Player.Enable();
-            
+
             _inputActions.Player.Move.performed += OnMovePerformed;
             _inputActions.Player.Move.canceled += OnMoveCanceled;
             _inputActions.Player.Look.performed += OnLookPerformed;
@@ -42,10 +37,10 @@ namespace Game.Input
             _inputActions.Player.Sprint.canceled += OnSprintCanceled;
             _inputActions.Player.Interact.performed += OnInteractPerformed;
             _inputActions.Player.Interact.canceled += OnInteractCanceled;
-            
+
             // Car controls
-            _inputActions.Player.Jump.performed += OnBrakePerformed;
-            _inputActions.Player.Jump.canceled += OnBrakeCanceled;
+            _inputActions.Player.Brake.performed += OnBrakePerformed;
+            _inputActions.Player.Brake.canceled += OnBrakeCanceled;
         }
 
         private void OnDisable()
@@ -58,9 +53,9 @@ namespace Game.Input
             _inputActions.Player.Sprint.canceled -= OnSprintCanceled;
             _inputActions.Player.Interact.performed -= OnInteractPerformed;
             _inputActions.Player.Interact.canceled -= OnInteractCanceled;
-            _inputActions.Player.Jump.performed -= OnBrakePerformed;
-            _inputActions.Player.Jump.canceled -= OnBrakeCanceled;
-            
+            _inputActions.Player.Brake.performed -= OnBrakePerformed;
+            _inputActions.Player.Brake.canceled -= OnBrakeCanceled;
+
             _inputActions.Player.Disable();
         }
 
@@ -129,11 +124,7 @@ namespace Game.Input
         public void HandleInteract()
         {
             _isInteracting = true;
-            // Trigger interaction event
-            if (ServiceLocator.HasService<GameManager>())
-            {
-                ServiceLocator.GetService<GameManager>().HandleInteraction();
-            }
+            ServiceLocator.Instance.GetService<GameManager>().HandleInteraction();
         }
 
         public void HandleBrake(bool isBraking)

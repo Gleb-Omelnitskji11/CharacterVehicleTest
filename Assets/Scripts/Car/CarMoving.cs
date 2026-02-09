@@ -6,57 +6,40 @@ namespace Game.Car
 {
     public class CarMoving : MonoBehaviour
     {
-        [Header("Car Settings")]
-        [SerializeField] private float _maxSpeed = 50f;
-        [SerializeField] private float _acceleration = 15f;
-        [SerializeField] private float _brakeForce = 30f;
-        [SerializeField] private float _reverseSpeed = 10f;
-        [SerializeField] private float _turnSensitivity = 2f;
-        [SerializeField] private float _steeringReturnSpeed = 3f;
+        [Header("Wheels")] public WheelCollider frontLeft;
+        public WheelCollider frontRight;
+        public WheelCollider rearLeft;
+        public WheelCollider rearRight;
 
-        [Header("Wheel Colliders")]
-        [SerializeField] private WheelCollider _frontLeftWheel;
-        [SerializeField] private WheelCollider _frontRightWheel;
-        [SerializeField] private WheelCollider _rearLeftWheel;
-        [SerializeField] private WheelCollider _rearRightWheel;
+        [Header("Wheel Meshes")] public Transform frontLeftMesh;
+        public Transform frontRightMesh;
+        public Transform rearLeftMesh;
+        public Transform rearRightMesh;
 
-        [Header("Wheel Transforms")]
-        [SerializeField] private Transform _frontLeftTransform;
-        [SerializeField] private Transform _frontRightTransform;
-        [SerializeField] private Transform _rearLeftTransform;
-        [SerializeField] private Transform _rearRightTransform;
+        [Header("Car Settings")] public float motorTorque = 1500f;
+        public float maxSteerAngle = 30f;
+        public float brakeForce = 3000f;
 
-        [Header("Center of Mass")]
-        [SerializeField] private Transform _centerOfMass;
+        [Header("Suspension / Stability")] public float antiRollForce = 5000f;
 
+        private Rigidbody _rb;
+
+        private Vector2 _directionInput;
+        private bool _brakeInput;
         private InputController _inputController;
-        private Rigidbody _rigidbody;
-        private float _currentSpeed;
-        private float _motorTorque;
-        private float _brakeTorque;
-        private float _steeringAngle;
-        private bool _isBraking;
-        private bool _isReversing;
-
-        // Suspension settings for realistic physics
-        [Header("Suspension")]
-        [SerializeField] private float _suspensionDistance = 0.2f;
-        [SerializeField] private float _suspensionSpring = 35000f;
-        [SerializeField] private float _suspensionDamper = 4500f;
-        [SerializeField] private float _suspensionTargetPosition = 0.5f;
         private GameManager _gameManager;
 
         private void Awake()
         {
-            _rigidbody = GetComponent<Rigidbody>();
+            _rb = GetComponent<Rigidbody>();
+            _rb.centerOfMass = new Vector3(0, -0.5f, 0);
         }
+
 
         private void Start()
         {
             _inputController = ServiceLocator.Instance.GetService<InputController>();
             _gameManager = ServiceLocator.Instance.GetService<GameManager>();
-            SetupCarPhysics();
-            SetupWheels();
         }
 
         private void Update()
@@ -64,177 +47,85 @@ namespace Game.Car
             if (_gameManager.CurrentControlMode != ControlMode.Car)
                 return;
             
-            HandleInput();
-            UpdateCarPhysics();
+            _directionInput = _inputController.MoveDirection;
+            _brakeInput = _inputController.IsBraking;
             UpdateWheelVisuals();
         }
 
-        private void SetupCarPhysics()
+        private void FixedUpdate()
         {
-            // Set rigidbody constraints for realistic car behavior
-            //_rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            HandleMotor();
+            HandleSteering();
+            HandleBrakes();
+            ApplyAntiRoll(frontLeft, frontRight);
+            ApplyAntiRoll(rearLeft, rearRight);
         }
 
-        private void SetupWheels()
-        {
-            // Configure suspension for all wheels
-            WheelCollider[] wheels = { _frontLeftWheel, _frontRightWheel, _rearLeftWheel, _rearRightWheel };
-            
-            foreach (var wheel in wheels)
-            {
-                if (wheel != null)
-                {
-                    JointSpring suspension = wheel.suspensionSpring;
-                    suspension.spring = _suspensionSpring;
-                    suspension.damper = _suspensionDamper;
-                    suspension.targetPosition = _suspensionTargetPosition;
-                    wheel.suspensionSpring = suspension;
+        // ---------------- MOVEMENT ----------------
 
-                    wheel.suspensionDistance = _suspensionDistance;
-                    wheel.radius = 0.3f;
-                    wheel.wheelDampingRate = 0.25f;
-                    wheel.forwardFriction = SetFrictionCurve(1.2f, 2f, 0.02f);
-                    wheel.sidewaysFriction = SetFrictionCurve(1.5f, 2f, 0.02f);
-                }
-            }
+        private void HandleMotor()
+        {
+            rearLeft.motorTorque = _directionInput.y * motorTorque;
+            rearRight.motorTorque = _directionInput.y * motorTorque;
         }
 
-        private WheelFrictionCurve SetFrictionCurve(float extremumSlip, float extremumValue, float asymptoteValue)
+        private void HandleSteering()
         {
-            WheelFrictionCurve friction = new WheelFrictionCurve();
-            friction.extremumSlip = extremumSlip;
-            friction.extremumValue = extremumValue;
-            friction.asymptoteSlip = 2f;
-            friction.asymptoteValue = asymptoteValue;
-            friction.stiffness = 1f;
-            return friction;
+            float steerAngle = _directionInput.x * maxSteerAngle;
+            frontLeft.steerAngle = steerAngle;
+            frontRight.steerAngle = steerAngle;
         }
 
-        private void HandleInput()
+        private void HandleBrakes()
         {
-            Vector2 moveInput = _inputController.MoveDirection;
-            _isBraking = _inputController.IsBraking;
+            float force = _brakeInput ? brakeForce : 0f;
 
-            // Calculate motor torque based on input
-            if (moveInput.y > 0.1f)
-            {
-                _motorTorque = moveInput.y * _acceleration * _rigidbody.mass;
-                _isReversing = false;
-            }
-            else if (moveInput.y < -0.1f)
-            {
-                _motorTorque = moveInput.y * _reverseSpeed * _rigidbody.mass;
-                _isReversing = true;
-            }
-            else
-            {
-                _motorTorque = 0f;
-            }
-
-            // Calculate steering angle
-            float targetSteeringAngle = moveInput.x * _turnSensitivity;
-            
-            // Reduce steering at high speeds for realism
-            float speedFactor = Mathf.Clamp01(_currentSpeed / _maxSpeed);
-            targetSteeringAngle *= (1f - speedFactor * 0.7f);
-
-            _steeringAngle = Mathf.Lerp(_steeringAngle, targetSteeringAngle, Time.deltaTime * _steeringReturnSpeed);
-
-            // Calculate brake torque
-            if (_isBraking || (_isReversing && _currentSpeed > 1f))
-            {
-                _brakeTorque = _brakeForce * _rigidbody.mass;
-            }
-            else
-            {
-                _brakeTorque = 0f;
-            }
+            frontLeft.brakeTorque = force;
+            frontRight.brakeTorque = force;
+            rearLeft.brakeTorque = force;
+            rearRight.brakeTorque = force;
         }
 
-        private void UpdateCarPhysics()
+        // ---------------- SUSPENSION ----------------
+        
+        private void ApplyAntiRoll(WheelCollider left, WheelCollider right)
         {
-            _currentSpeed = _rigidbody.linearVelocity.magnitude;
+            bool leftGrounded = left.GetGroundHit(out WheelHit leftHit);
+            bool rightGrounded = right.GetGroundHit(out WheelHit rightHit);
 
-            // Apply motor torque to rear wheels (RWD configuration)
-            _rearLeftWheel.motorTorque = _motorTorque;
-            _rearRightWheel.motorTorque = _motorTorque;
+            if (!leftGrounded || !rightGrounded)
+                return;
 
-            // Apply steering to front wheels
-            _frontLeftWheel.steerAngle = _steeringAngle;
-            _frontRightWheel.steerAngle = _steeringAngle;
+            if (left.suspensionDistance <= 0f || right.suspensionDistance <= 0f)
+                return;
 
-            // Apply brakes to all wheels
-            _frontLeftWheel.brakeTorque = _brakeTorque;
-            _frontRightWheel.brakeTorque = _brakeTorque;
-            _rearLeftWheel.brakeTorque = _brakeTorque;
-            _rearRightWheel.brakeTorque = _brakeTorque;
+            float travelL = (-left.transform.InverseTransformPoint(leftHit.point).y - left.radius)
+                            / left.suspensionDistance;
 
-            // Update wheel physics
-            UpdateSingleWheel(_frontLeftWheel);
-            UpdateSingleWheel(_frontRightWheel);
-            UpdateSingleWheel(_rearLeftWheel);
-            UpdateSingleWheel(_rearRightWheel);
+            float travelR = (-right.transform.InverseTransformPoint(rightHit.point).y - right.radius)
+                            / right.suspensionDistance;
+
+            float antiRoll = (travelL - travelR) * antiRollForce;
+
+            _rb.AddForceAtPosition(-left.transform.up * antiRoll, left.transform.position);
+            _rb.AddForceAtPosition(right.transform.up * antiRoll, right.transform.position);
         }
 
-        private void UpdateSingleWheel(WheelCollider wheel)
-        {
-            if (wheel.isGrounded)
-            {
-                wheel.GetGroundHit(out WheelHit hit);
-                Vector3 wheelVelocity = _rigidbody.GetPointVelocity(wheel.transform.position);
-                
-                // Apply additional forces for realistic behavior
-                if (Mathf.Abs(hit.forwardSlip) > 0.1f)
-                {
-                    _rigidbody.AddForceAtPosition(-hit.forwardSlip * hit.normal * 100f, wheel.transform.position);
-                }
-            }
-        }
+        // ---------------- VISUALS ----------------
 
         private void UpdateWheelVisuals()
         {
-            UpdateWheelTransform(_frontLeftWheel, _frontLeftTransform);
-            UpdateWheelTransform(_frontRightWheel, _frontRightTransform);
-            UpdateWheelTransform(_rearLeftWheel, _rearLeftTransform);
-            UpdateWheelTransform(_rearRightWheel, _rearRightTransform);
+            UpdateWheel(frontLeft, frontLeftMesh);
+            UpdateWheel(frontRight, frontRightMesh);
+            UpdateWheel(rearLeft, rearLeftMesh);
+            UpdateWheel(rearRight, rearRightMesh);
         }
 
-        private void UpdateWheelTransform(WheelCollider collider, Transform transform)
+        private void UpdateWheel(WheelCollider collider, Transform mesh)
         {
-            if (collider != null && transform != null)
-            {
-                Vector3 position;
-                Quaternion rotation;
-                collider.GetWorldPose(out position, out rotation);
-                transform.position = position;
-                transform.rotation = rotation;
-            }
-        }
-
-        public void EnterCar()
-        {
-            //gameObject.SetActive(true);
-        }
-
-        public void ExitCar()
-        {
-            //gameObject.SetActive(false);
-        }
-
-        public Vector3 GetExitPosition()
-        {
-            // Return a position next to the car for the player to exit
-            return transform.position + transform.right * 2f + Vector3.up;
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-            // Draw center of mass
-            if (_centerOfMass != null)
-            {
-                //Gizmos.color = Color.red;
-                //Gizmos.DrawSphere(_centerOfMass.position, 0.1f);
-            }
+            collider.GetWorldPose(out Vector3 pos, out Quaternion rot);
+            mesh.position = pos;
+            mesh.rotation = rot;
         }
     }
 }

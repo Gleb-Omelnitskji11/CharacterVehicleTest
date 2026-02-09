@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Game.Input;
 using Game.Player;
@@ -9,10 +10,12 @@ namespace Game.Core
     {
         public static GameManager Instance { get; private set; }
 
-        [Header("Player Setup")] [SerializeField]
-        private GameObject _playerPrefab;
-
+        [Header("Character Setup")]
+        [SerializeField] private GameObject _playerPrefab;
         [SerializeField] private Transform _playerSpawnPoint;
+        
+        [Header("Cars Setup")]
+        [SerializeField] private List<CarMoving> _cars;
 
         [Header("UI")] [SerializeField] private GameObject _interactionPrompt;
 
@@ -74,13 +77,15 @@ namespace Game.Core
                     _playerMoving = FindObjectOfType<PlayerMoving>();
                 }
             }
+            
+            if(_currentCar == null) _currentCar = _cars[0];
 
             // Get input controller
             _inputController = ServiceLocator.Instance.GetService<InputController>();
             _thirdPersonCamera = ServiceLocator.Instance.GetService<ThirdPersonCamera>();
 
             // Set initial control mode
-            _currentControlMode = ControlMode.Player;
+            _currentControlMode = ControlMode.Car;
             SetupCameras();
         }
 
@@ -96,7 +101,7 @@ namespace Game.Core
                     break;
             }
 
-            _thirdPersonCamera.SetTarget(_currentPerson);
+            _thirdPersonCamera.SetTarget(_currentPerson, _currentControlMode);
         }
 
         private void HandleInteractionInput()
@@ -163,7 +168,7 @@ namespace Game.Core
             _playerMoving.EnterCar();
 
             // Enable car
-            _currentCar.EnterCar();
+            //_currentCar.EnterCar();
 
             // Setup cameras
             SetupCameras();
@@ -176,16 +181,16 @@ namespace Game.Core
             if (_currentCar == null || _playerMoving == null) return;
 
             // Get exit position from car
-            Vector3 exitPosition = _currentCar.GetExitPosition();
+            //Vector3 exitPosition = _currentCar.GetExitPosition();
 
             // Switch control mode
             _currentControlMode = ControlMode.Player;
 
             // Disable car
-            _currentCar.ExitCar();
+            //_currentCar.ExitCar();
 
             // Enable player at exit position
-            _playerMoving.ExitCar(exitPosition);
+            //_playerMoving.ExitCar(exitPosition);
 
             // Clear current car reference
             _currentCar = null;
@@ -204,7 +209,7 @@ namespace Game.Core
 
         public void RegisterCar(CarMoving car)
         {
-            // This can be used for car management if needed
+            _currentCar = car;
         }
 
         private void OnDrawGizmosSelected()

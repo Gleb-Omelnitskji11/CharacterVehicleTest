@@ -31,7 +31,6 @@ namespace Game.Player
         [Header("Other")]
         [SerializeField] private CharacterController _characterController;
         private InputController _inputController;
-        private Camera _camera;
         private Vector3 _velocity;
         private float _currentSpeed;
 
@@ -44,7 +43,6 @@ namespace Game.Player
         private void Start()
         {
             _inputController = ServiceLocator.Instance.GetService<InputController>();
-            _camera = Camera.main;
             _currentSpeed = _walkSpeed;
             _gameManager = ServiceLocator.Instance.GetService<GameManager>();
         }

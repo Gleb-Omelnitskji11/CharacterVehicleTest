@@ -4,20 +4,23 @@ using UnityEngine;
 
 public class ThirdPersonCamera : MonoBehaviour
 {
-    [SerializeField] private Transform _target; // гравець
-    [SerializeField] private Vector3 _cameraOffset = new Vector3(0f, 3.87f, -4.2f);
+    [SerializeField] private Transform _target;
+    [SerializeField] private Vector3 _characterOffset = new Vector3(0f, 3.87f, -4.2f);
+    [SerializeField] private Vector3 _carOffset = new Vector3(0f, 3.87f, -5.2f);
     [SerializeField] private float _sensitivity = 120f;
 
-    [Header("Smoothing")]
-    [SerializeField] private float _positionSmoothTime = 0.05f;
+    [Header("Smoothing")] [SerializeField] private float _positionSmoothTime = 0.05f;
 
     private float _yaw;
     private float _pitch;
     private Vector3 _velocity;
 
+    private Vector3 _cameraOffset;
+
     private InputController _input;
 
     private bool _initialized;
+    private GameManager _gameManager;
 
     private void Awake()
     {
@@ -28,16 +31,18 @@ public class ThirdPersonCamera : MonoBehaviour
     private void Start()
     {
         _input = ServiceLocator.Instance.GetService<InputController>();
+        _gameManager = ServiceLocator.Instance.GetService<GameManager>();
         // стартовий поворот
         Vector3 angles = transform.eulerAngles;
         _yaw = angles.y;
         _pitch = angles.x;
     }
 
-    public void SetTarget(Transform target)
+    public void SetTarget(Transform target, ControlMode mode)
     {
         _target = target;
         _initialized = true;
+        _cameraOffset = mode == ControlMode.Car ? _carOffset : _characterOffset;
     }
 
     private void LateUpdate()

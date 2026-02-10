@@ -1,29 +1,26 @@
+using System;
 using Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Game.Core;
 
-namespace Game.Input
+namespace Input
 {
-    public class InputController : MonoBehaviour
+    public class InputController : MonoBehaviour, IInputController
     {
         private InputSystem_Actions _inputActions;
         private Vector2 _moveDirection;
         private Vector2 _deltaLookDirection;
-        private bool _pressingSprinting;
-        private bool _pressingInteracting;
-        private bool _pressingBraking;
 
         public Vector2 MoveDirection => _moveDirection;
         public Vector2 DeltaLookDirection => _deltaLookDirection;
-        public bool PressingSprinting => _pressingSprinting;
-        public bool PressingInteracting => _pressingInteracting;
-        public bool PressingBraking => _pressingBraking;
+        public event Action<bool> OnHoldSprinting;
+        public event Action<bool> OnHoldBraking;
+        public event Action OnPressingInteracting;
 
         private void Awake()
         {
             _inputActions = new InputSystem_Actions();
-            ServiceLocator.Instance.RegisterService<InputController>(this);
+            ServiceLocator.Instance.RegisterService<IInputController>(this);
         }
 
         private void OnEnable()
@@ -37,7 +34,6 @@ namespace Game.Input
             _inputActions.Player.Sprint.performed += OnSprintPerformed;
             _inputActions.Player.Sprint.canceled += OnSprintCanceled;
             _inputActions.Player.Interact.performed += OnInteractPerformed;
-            _inputActions.Player.Interact.canceled += OnInteractCanceled;
 
             // Car controls
             _inputActions.Player.Brake.performed += OnBrakePerformed;
@@ -53,7 +49,6 @@ namespace Game.Input
             _inputActions.Player.Sprint.performed -= OnSprintPerformed;
             _inputActions.Player.Sprint.canceled -= OnSprintCanceled;
             _inputActions.Player.Interact.performed -= OnInteractPerformed;
-            _inputActions.Player.Interact.canceled -= OnInteractCanceled;
             _inputActions.Player.Brake.performed -= OnBrakePerformed;
             _inputActions.Player.Brake.canceled -= OnBrakeCanceled;
 
@@ -82,63 +77,27 @@ namespace Game.Input
 
         private void OnSprintPerformed(InputAction.CallbackContext context)
         {
-            _pressingSprinting = true;
+            OnHoldSprinting?.Invoke(true);
         }
 
         private void OnSprintCanceled(InputAction.CallbackContext context)
         {
-            _pressingSprinting = false;
+            OnHoldSprinting?.Invoke(false);
         }
 
         private void OnInteractPerformed(InputAction.CallbackContext context)
         {
-            _pressingInteracting = true;
-        }
-
-        private void OnInteractCanceled(InputAction.CallbackContext context)
-        {
-            _pressingInteracting = false;
+            OnPressingInteracting?.Invoke();
         }
 
         private void OnBrakePerformed(InputAction.CallbackContext context)
         {
-            _pressingBraking = true;
+            OnHoldBraking?.Invoke(true);
         }
 
         private void OnBrakeCanceled(InputAction.CallbackContext context)
         {
-            _pressingBraking = false;
-        }
-
-        // Public methods for command pattern
-        public void HandleMove(Vector2 direction, bool isSprinting)
-        {
-            _moveDirection = direction;
-            _pressingSprinting = isSprinting;
-        }
-
-        public void HandleLook(Vector2 lookDirection)
-        {
-            _deltaLookDirection = lookDirection;
-        }
-
-        public void HandleInteract()
-        {
-            _pressingInteracting = true;
-        }
-
-        public void HandleBrake(bool isBraking)
-        {
-            _pressingBraking = isBraking;
-        }
-
-        private void Update()
-        {
-            // Reset interaction flag after one frame
-            if (_pressingInteracting)
-            {
-                _pressingInteracting = false;
-            }
+            OnHoldBraking?.Invoke(false);
         }
     }
 }

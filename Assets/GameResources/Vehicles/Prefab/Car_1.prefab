@@ -120,7 +120,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 086474d5aca9dad41b49a0b28fb6d71a, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8377544501171014153}
+      addedObject: {fileID: 2467466061038728008}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 086474d5aca9dad41b49a0b28fb6d71a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6601366404066956181}
@@ -148,7 +148,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 086474d5aca9dad41b49a0b28fb6d71a, type: 3}
   m_PrefabInstance: {fileID: 4800630064976735920}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8377544501171014153
+--- !u!114 &2467466061038728008
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -157,9 +157,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 5646997480570786785}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b295169e96deef94aa362087a2450ee9, type: 3}
+  m_Script: {fileID: 11500000, guid: 17b178c40928af044901a08bb07ae9cd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Car.Car
+  m_EditorClassIdentifier: Assembly-CSharp::Vehicles.Car
   _carMoving: {fileID: 6601366404066956181}
   _carModel: {fileID: 5877070063247382445}
   _carRb: {fileID: 1975852948237939375}
@@ -177,6 +177,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4843bbadfe330eb4781a1fc7dbcf54fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Car.CarMoving
+  _enabled: 1
   _frontLeft: {fileID: 1033300061583195444}
   _frontRight: {fileID: 8688322732072011273}
   _rearLeft: {fileID: 8942139103619354114}
@@ -189,6 +190,7 @@ MonoBehaviour:
   _maxSteerAngle: 30
   _brakeForce: 3000
   _antiRollForce: 5000
+  _rb: {fileID: 0}
 --- !u!54 &1975852948237939375
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -554,7 +556,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 086474d5aca9dad41b49a0b28fb6d71a, type: 3}
       propertyPath: m_Name
-      value: Model
+      value: ModelCollider
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 086474d5aca9dad41b49a0b28fb6d71a, type: 3}
       propertyPath: m_Layer

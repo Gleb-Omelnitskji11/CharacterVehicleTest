@@ -1,11 +1,11 @@
+using Camera;
 using Core;
+using Input;
 using UnityEngine;
-using Game.Input;
-using Game.Core;
 
-namespace Game.Player
+namespace Player
 {
-    public class CharacterMoving : MonoBehaviour
+    public class CharacterMoving : BaseMovementController
     {
         private static readonly int Sprint = Animator.StringToHash(ANIMATOR_Sprint);
         private static readonly int Moving = Animator.StringToHash(ANIMATOR_Moving);
@@ -28,28 +28,44 @@ namespace Game.Player
         [Header("Other")]
         [SerializeField] private CharacterController _characterController;
         
-        private InputController _inputController;
+        private IInputController _inputController;
         private Vector3 _velocity;
         private float _currentSpeed;
 
         private bool _animationMoving;
         private bool _animationSprint;
-        private InteractManager _interactManager;
         private Transform _cameraTransform;
 
         private void Start()
         {
-            _inputController = ServiceLocator.Instance.GetService<InputController>();
-            _currentSpeed = _walkSpeed;
-            _interactManager = ServiceLocator.Instance.GetService<InteractManager>();
-            _cameraTransform = _interactManager.CurrentCamera;
+            GetServices();
+            Set();
         }
 
-        private void Update()
+        private void GetServices()
         {
-            if (_interactManager.CurrentControlMode != ControlMode.Character)
-                return;
+            _inputController = ServiceLocator.Instance.GetService<IInputController>();
+            _cameraTransform = ServiceLocator.Instance.GetService<ThirdPersonCamera>().transform;
+        }
 
+        private void Set()
+        {
+            _currentSpeed = _walkSpeed;
+            _inputController.OnHoldSprinting += SetSprint;
+        }
+
+        private void OnDestroy()
+        {
+            _inputController.OnHoldSprinting -= SetSprint;
+        }
+
+        private void SetSprint(bool sprint)
+        {
+            _animationSprint = sprint;
+        }
+
+        public override void UpdateMovement()
+        {
             Vector3 moveDirection;
             HandleMovement(out moveDirection);
             HandleCharacterRotation(ref moveDirection);
@@ -60,7 +76,6 @@ namespace Game.Player
         private void HandleMovement(out Vector3 moveDirection)
         {
             Vector2 moveInput = _inputController.MoveDirection;
-            _animationSprint = _inputController.PressingSprinting;
             _animationMoving = moveInput.sqrMagnitude > 0;
 
             // Calculate target speed
@@ -113,15 +128,10 @@ namespace Game.Player
             _animator.SetBool(Sprint, _animationSprint);
         }
 
-        public void EnterCar()
+        public bool CanInteractWithCar(Vector3 carPosition, float interactionRadius)
         {
-            gameObject.SetActive(false);
-        }
-
-        public void ExitCar(Vector3 exitPosition)
-        {
-            transform.position = exitPosition;
-            gameObject.SetActive(true);
+            float distance = (transform.position - carPosition).sqrMagnitude;
+            return distance <= interactionRadius * interactionRadius;
         }
     }
 }

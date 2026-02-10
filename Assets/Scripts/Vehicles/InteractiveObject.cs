@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Car
+namespace Vehicles
 {
     public abstract class InteractiveObject : MonoBehaviour
     {

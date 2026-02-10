@@ -1,35 +1,25 @@
 using System.Collections.Generic;
-using Car;
-using Game.Core;
-using Game.Input;
+using Input;
 using Player;
 using UnityEngine;
+using Vehicles;
 
 namespace Core
 {
     public class InteractManager : MonoBehaviour
     {
-        [Header("Character")]
-        [SerializeField] private PlayerHolder _player;
+        [Header("Character")] [SerializeField] private PlayerHolder _player;
 
-        [Header("Cars")]
-        [SerializeField] private List<InteractiveObject> _devices;
+        [Header("Cars")] [SerializeField] private List<InteractiveObject> _devices;
 
-        [Header("UI")]
-        [SerializeField] private GameObject _interactionPrompt;
-        
-        [Header("Camera")]
-        [SerializeField] private ThirdPersonCamera _thirdPersonCamera;
-        
-        private InputController _inputController;
+        [Header("UI")] [SerializeField] private GameObject _interactionPrompt;
 
-        private ControlMode _currentControlMode;
+        private IInputController _inputController;
+        private GameStateManager _gameStateManager;
+
         private InteractiveObject _objectToInteract;
-        public ControlMode CurrentControlMode => _currentControlMode;
-        public GameObject CurrentPlayerMover { get; private set; }
         public PlayerHolder PlayerHolder { get; private set; }
         public bool ChosenInteract { get; private set; }
-        public Transform CurrentCamera => _thirdPersonCamera.transform;
 
         private void Awake()
         {
@@ -43,37 +33,26 @@ namespace Core
 
         private void Update()
         {
-            HandleInteractionInput();
             UpdateInteractionPrompt();
+        }
+
+        private void OnDestroy()
+        {
+            _inputController.OnPressingInteracting -= HandleInteraction;
         }
 
         private void InitializeGame()
         {
             // Get services
-            _inputController = ServiceLocator.Instance.GetService<InputController>();
-            _thirdPersonCamera = ServiceLocator.Instance.GetService<ThirdPersonCamera>();
+            _inputController = ServiceLocator.Instance.GetService<IInputController>();
+            _gameStateManager = ServiceLocator.Instance.GetService<GameStateManager>();
             
+            //subscribe
+            _inputController.OnPressingInteracting += HandleInteraction;
+
             // Set initial control mode
             PlayerHolder = _player;
-            CurrentPlayerMover = PlayerHolder.gameObject;
-            _currentControlMode = ControlMode.Character;
-            SetupCameras();
-        }
-
-        private void SetupCameras()
-        {
-            CurrentPlayerMover = _currentControlMode == ControlMode.Character
-                ? PlayerHolder.gameObject
-                : _objectToInteract.gameObject;
-            _thirdPersonCamera.UpdateSettings();
-        }
-
-        private void HandleInteractionInput()
-        {
-            if (_inputController.PressingInteracting)
-            {
-                HandleInteraction();
-            }
+            _gameStateManager.SetInitialState(_player.transform);
         }
 
         private void UpdateInteractionPrompt()
@@ -105,45 +84,17 @@ namespace Core
 
         private void HandleInteraction()
         {
-            _objectToInteract.Interact();
+            _objectToInteract?.Interact();
         }
 
-        public void TryEnterCar()
+        public void SetInteractionObject(InteractiveObject interactiveObject)
         {
-            if (_currentControlMode == ControlMode.Car)
-                return;
-
-            EnterCar();
+            _objectToInteract = interactiveObject;
         }
 
-        public void TryExitCar()
+        public void UpdateInteractionPrompt(bool showPrompt)
         {
-            if (_currentControlMode != ControlMode.Car)
-                return;
-
-            ExitCar();
-        }
-
-        private void EnterCar()
-        {
-            PlayerHolder.gameObject.SetActive(false);
-            SetControlMode(ControlMode.Car);
-            Debug.Log("Player entered car");
-        }
-
-        private void ExitCar()
-        {
-            PlayerHolder.gameObject.SetActive(true);
-            SetControlMode(ControlMode.Character);
-            ChosenInteract = false;
-
-            Debug.Log("Player exited car");
-        }
-
-        private void SetControlMode(ControlMode mode)
-        {
-            _currentControlMode = mode;
-            SetupCameras();
+            _interactionPrompt.SetActive(showPrompt);
         }
     }
 }

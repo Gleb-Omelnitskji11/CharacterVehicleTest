@@ -1,8 +1,8 @@
-namespace Game.Core
+namespace Core
 {
     public enum ControlMode
     {
         Character,
-        Car
+        Vehicle
     }
 }

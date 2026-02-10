@@ -1,58 +1,61 @@
 using Core;
+using Input;
 using UnityEngine;
-using Game.Input;
-using Game.Core;
 
-namespace Game.Vehicles
+namespace Vehicles
 {
-    public class CarMoving : MonoBehaviour
+    public class CarMoving : BaseMovementController
     {
-        [Header("Wheels")]
-        [SerializeField] private WheelCollider _frontLeft;
+        [Header("Wheels")] [SerializeField] private WheelCollider _frontLeft;
         [SerializeField] private WheelCollider _frontRight;
         [SerializeField] private WheelCollider _rearLeft;
         [SerializeField] private WheelCollider _rearRight;
-        
-        [Header("Wheel Meshes")]
-        [SerializeField] private Transform _frontLeftMesh;
+
+        [Header("Wheel Meshes")] [SerializeField]
+        private Transform _frontLeftMesh;
+
         [SerializeField] private Transform _frontRightMesh;
         [SerializeField] private Transform _rearLeftMesh;
         [SerializeField] private Transform _rearRightMesh;
 
-        [Header("Car Settings")]
-        [SerializeField] private float _motorTorque = 1500f;
+        [Header("Car Settings")] [SerializeField]
+        private float _motorTorque = 1500f;
+
         [SerializeField] private float _maxSteerAngle = 30f;
         [SerializeField] private float _brakeForce = 3000f;
         [SerializeField] private float _antiRollForce = 5000f;
 
-        private Rigidbody _rb;
+        [SerializeField] private Rigidbody _rb;
 
         private Vector2 _directionInput;
         private bool _brakeInput;
+        private GameObject _driver;
 
-        private InputController _inputController;
-        private InteractManager _interactManager;
+        private IInputController _inputController;
 
-        private void Awake()
-        {
-            _rb = GetComponent<Rigidbody>();
-            _rb.centerOfMass = new Vector3(0, -0.5f, 0);
-        }
-
+        public bool HasDriver => _driver != null;
 
         private void Start()
         {
-            _inputController = ServiceLocator.Instance.GetService<InputController>();
-            _interactManager = ServiceLocator.Instance.GetService<InteractManager>();
+            _inputController = ServiceLocator.Instance.GetService<IInputController>();
+            _inputController.OnHoldBraking += SetBraking;
         }
 
-        private void Update()
+        private void OnDestroy()
         {
-            if (_interactManager.CurrentControlMode != ControlMode.Car)
-                return;
+            if(_inputController != null)
+                _inputController.OnHoldBraking -= SetBraking;
+        }
 
+        private void SetBraking(bool isBraking)
+        {
+            _brakeInput = isBraking;
+            HandleBrakes();
+        }
+
+        public override void UpdateMovement()
+        {
             _directionInput = _inputController.MoveDirection;
-            _brakeInput = _inputController.PressingBraking;
             UpdateWheelVisuals();
         }
 
@@ -60,7 +63,6 @@ namespace Game.Vehicles
         {
             HandleMotor();
             HandleSteering();
-            HandleBrakes();
             ApplyAntiRoll(_frontLeft, _frontRight);
             ApplyAntiRoll(_rearLeft, _rearRight);
         }
@@ -113,8 +115,6 @@ namespace Game.Vehicles
             _rb.AddForceAtPosition(right.transform.up * antiRoll, right.transform.position);
         }
 
-        // ---------------- VISUALS ----------------
-
         private void UpdateWheelVisuals()
         {
             UpdateWheel(_frontLeft, _frontLeftMesh);
@@ -123,11 +123,27 @@ namespace Game.Vehicles
             UpdateWheel(_rearRight, _rearRightMesh);
         }
 
-        private void UpdateWheel(WheelCollider collider, Transform mesh)
+        private void UpdateWheel(WheelCollider wheelCollider, Transform mesh)
         {
-            collider.GetWorldPose(out Vector3 pos, out Quaternion rot);
+            wheelCollider.GetWorldPose(out Vector3 pos, out Quaternion rot);
             mesh.position = pos;
             mesh.rotation = rot;
+        }
+
+        public void SetDriver(GameObject driver)
+        {
+            _driver = driver;
+        }
+
+        public void RemoveDriver()
+        {
+            _driver = null;
+        }
+
+        public Vector3 GetExitPosition()
+        {
+            // This should be configured per car, for now return transform position + offset
+            return transform.position + transform.right * 2f;
         }
     }
 }

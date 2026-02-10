@@ -1,7 +1,4 @@
-using Car;
 using Core;
-using Game.Core;
-using Game.Vehicles;
 using UnityEngine;
 
 namespace Vehicles
@@ -15,27 +12,28 @@ namespace Vehicles
         
         [SerializeField] private float _distance;
         [SerializeField] private Transform _exitPoint;
-        private InteractManager _interactManager;
-
+        private GameStateManager _gameStateManager;
         private bool _isDraven;
+
+        private Transform _movingHolder;
 
         private void Start()
         {
-            _interactManager = ServiceLocator.Instance.GetService<InteractManager>();
+            _gameStateManager = ServiceLocator.Instance.GetService<GameStateManager>();
         }
 
         public override bool CanInteract()
         {
-            if (_interactManager.CurrentControlMode == ControlMode.Character)
+            if (_gameStateManager.CurrentControlMode == ControlMode.Character)
             {
-                float distance = (transform.position - _interactManager.CurrentPlayerMover.transform.position).sqrMagnitude;
+                float distance = (transform.position - _gameStateManager.CurrentPlayerTransform.position).sqrMagnitude;
                 if (_distance >= distance)
                 {
                     Debug.Log("Can Interact");
                     return true;
                 }
             }
-            else if (_interactManager.CurrentControlMode == ControlMode.Car && _isDraven)
+            else if (_gameStateManager.CurrentControlMode == ControlMode.Vehicle && _isDraven)
             {
                 return true;
             }
@@ -45,27 +43,38 @@ namespace Vehicles
 
         public override void Interact()
         {
-            if(_interactManager.CurrentControlMode == ControlMode.Character)
+            if(_gameStateManager.CurrentControlMode == ControlMode.Character)
             {
-                EnterCar();
+                TryEnterCar();
             }
             else
             {
-                ExitCar();
+                TryExitCar();
             }
         }
 
-        private void EnterCar()
+        private void TryEnterCar()
         {
+            _gameStateManager.TryEnterCar(transform, OnEnterCar);
+        }
+
+        private void OnEnterCar()
+        {
+            _movingHolder = _gameStateManager.CurrentPlayerTransform;
+            _movingHolder.gameObject.SetActive(false);
             _carMoving.enabled = true;
-            _interactManager.TryEnterCar();
         }
         
-        private void ExitCar()
+        private void TryExitCar()
         {
+            _gameStateManager.TryExitCar(_movingHolder, OnExitCar);
+        }
+
+        private void OnExitCar()
+        {
+            _movingHolder.transform.position = _exitPoint.position;
+            _movingHolder.gameObject.SetActive(true);
             _carMoving.enabled = false;
-            _interactManager.PlayerHolder.transform.position = _exitPoint.position;
-            _interactManager.TryExitCar();
         }
     }
 }

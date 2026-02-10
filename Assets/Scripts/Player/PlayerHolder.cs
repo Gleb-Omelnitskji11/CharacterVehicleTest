@@ -1,4 +1,4 @@
-using Game.Player;
+using Core.EventBus;
 using UnityEngine;
 
 namespace Player
@@ -8,7 +8,6 @@ namespace Player
         [SerializeField] private CharacterMoving _characterMoving;
         [SerializeField] private CharacterController _characterController;
         [SerializeField] private Animator _animator;
-
-        public CharacterMoving CharacterMoving => _characterMoving;
+        private IEventBus _eventBus;
     }
 }

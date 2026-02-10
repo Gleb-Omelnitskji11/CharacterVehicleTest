@@ -389,7 +389,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
       propertyPath: m_Name
-      value: Model
+      value: ModelCollider
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
       propertyPath: m_Layer
@@ -527,7 +527,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1884917774122788917}
+      addedObject: {fileID: 7286445822998962953}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6978458172756871019}
@@ -550,7 +550,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
   m_PrefabInstance: {fileID: 5529117649385224102}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1884917774122788917
+--- !u!114 &7286445822998962953
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -559,9 +559,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 4646086321704520439}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b295169e96deef94aa362087a2450ee9, type: 3}
+  m_Script: {fileID: 11500000, guid: 17b178c40928af044901a08bb07ae9cd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Vehicles.Car
+  m_EditorClassIdentifier: Assembly-CSharp::Vehicles.Car
   _carMoving: {fileID: 6978458172756871019}
   _carModel: {fileID: 1213422543987951006}
   _carRb: {fileID: 5165582457202572207}
@@ -579,6 +579,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4843bbadfe330eb4781a1fc7dbcf54fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Vehicles.CarMoving
+  _enabled: 1
   _frontLeft: {fileID: 1396197422952348740}
   _frontRight: {fileID: 3616843556830726055}
   _rearLeft: {fileID: 1483460389128179363}
@@ -591,6 +592,7 @@ MonoBehaviour:
   _maxSteerAngle: 30
   _brakeForce: 3000
   _antiRollForce: 5000
+  _rb: {fileID: 5165582457202572207}
 --- !u!54 &5165582457202572207
 Rigidbody:
   m_ObjectHideFlags: 0

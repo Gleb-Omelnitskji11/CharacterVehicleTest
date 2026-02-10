@@ -1,23 +1,25 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Core
 {
-    public class ServiceLocator
+    public class ServiceLocator : MonoBehaviour
     {
         private readonly Dictionary<Type, object> _services = new Dictionary<Type, object>();
-        private static ServiceLocator _instance;
 
-        public static ServiceLocator Instance
+        public static ServiceLocator Instance { get; private set; }
+
+        private void Awake()
         {
-            get
+            if(Instance != null)
             {
-                if (_instance == null)
-                {
-                    _instance = new ServiceLocator();
-                }
-                return _instance;
+                Destroy(gameObject);
+                return;
             }
+            
+            Instance = this;
+            DontDestroyOnLoad(this);
         }
 
         public void RegisterService<T>(T service)

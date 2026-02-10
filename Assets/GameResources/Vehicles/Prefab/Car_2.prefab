@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4525118104732059997}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ExitPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -91,13 +91,33 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8153753503685025520, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -7303758908269662964, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -7039602754804382767, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
       propertyPath: m_Name
       value: WheelsColliders
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2447304204470385121, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 2602571398244174475, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.557
+      value: 0.4235375
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: -7511558181221131132, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
@@ -371,6 +391,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Model
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: -8153753503685025520, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
@@ -462,9 +486,29 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8153753503685025520, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -7303758908269662964, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -7039602754804382767, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
       propertyPath: m_Name
       value: Car_2
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2447304204470385121, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: -5754084199372789682, guid: 346ddc0a19a42be4ca4f9c49674a1525, type: 3}
@@ -571,7 +615,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!4 &5418365025130614861 stripped

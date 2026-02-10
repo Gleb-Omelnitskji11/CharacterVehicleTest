@@ -7,11 +7,12 @@ namespace Player
 {
     public class ThirdPersonCamera : MonoBehaviour
     {
+        [Header("Offset")]
         [SerializeField] private Vector3 _characterOffset = new Vector3(0f, 3.87f, -4.2f);
         [SerializeField] private Vector3 _carOffset = new Vector3(0f, 3.87f, -5.2f);
-        [SerializeField] private float _sensitivity = 120f;
-
+        
         [Header("Smoothing")]
+        [SerializeField] private float _sensitivity = 120f;
         [SerializeField] private float _positionSmoothTime = 0.05f;
 
         private Transform _target;
@@ -29,7 +30,6 @@ namespace Player
 
         private void Awake()
         {
-            // Register services
             ServiceLocator.Instance.RegisterService<ThirdPersonCamera>(this);
         }
 
@@ -72,7 +72,6 @@ namespace Player
 
             _yaw += deltaLook.x * Time.deltaTime * _sensitivity;
             _pitch -= deltaLook.y * Time.deltaTime * _sensitivity;
-
             _pitch = Mathf.Clamp(_pitch, -30f, 60f);
         }
 
@@ -82,12 +81,8 @@ namespace Player
 
             Vector3 desiredPosition = _target.position + rotation * _cameraOffset;
 
-            transform.position = Vector3.SmoothDamp(
-                transform.position,
-                desiredPosition,
-                ref _velocity,
-                _positionSmoothTime
-            );
+            transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, 
+                ref _velocity, _positionSmoothTime);
 
             transform.rotation = rotation;
         }

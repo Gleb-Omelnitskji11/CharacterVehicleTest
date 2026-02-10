@@ -65,19 +65,6 @@ namespace Game.Vehicles
             ApplyAntiRoll(_rearLeft, _rearRight);
         }
 
-        public void EnterCar()
-        {
-            this.enabled = true;
-        }
-
-        public void ExitCar()
-        {
-            this.enabled = false;
-        }
-
-
-        // ---------------- MOVEMENT ----------------
-
         private void HandleMotor()
         {
             _rearLeft.motorTorque = _directionInput.y * _motorTorque;

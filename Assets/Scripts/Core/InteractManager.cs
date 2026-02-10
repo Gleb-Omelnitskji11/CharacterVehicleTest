@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Car;
 using Game.Core;
 using Game.Input;
-using Game.Vehicles;
 using Player;
 using UnityEngine;
 
@@ -10,26 +9,23 @@ namespace Core
 {
     public class InteractManager : MonoBehaviour
     {
-        [Header("Character Setup")]
-        [SerializeField] private GameObject _playerPrefab;
+        [Header("Character")]
+        [SerializeField] private PlayerHolder _player;
 
-        [SerializeField]
-        private Transform _playerSpawnPoint;
-
-        [Header("Cars Setup")]
+        [Header("Cars")]
         [SerializeField] private List<InteractiveObject> _devices;
 
         [Header("UI")]
         [SerializeField] private GameObject _interactionPrompt;
-
-        private ThirdPersonCamera _thirdPersonCamera;
+        
+        [Header("Camera")]
+        [SerializeField] private ThirdPersonCamera _thirdPersonCamera;
+        
         private InputController _inputController;
 
         private ControlMode _currentControlMode;
         private InteractiveObject _objectToInteract;
         public ControlMode CurrentControlMode => _currentControlMode;
-        public Vehicles.Car CurrentCar { get; private set; }
-
         public GameObject CurrentPlayerMover { get; private set; }
         public PlayerHolder PlayerHolder { get; private set; }
         public bool ChosenInteract { get; private set; }
@@ -37,7 +33,6 @@ namespace Core
 
         private void Awake()
         {
-            // Register services
             ServiceLocator.Instance.RegisterService<InteractManager>(this);
         }
 
@@ -54,18 +49,13 @@ namespace Core
 
         private void InitializeGame()
         {
-            // Find or spawn player
-            if (CurrentPlayerMover == null)
-            {
-                CurrentPlayerMover = Instantiate(_playerPrefab, _playerSpawnPoint.position, _playerSpawnPoint.rotation);
-                PlayerHolder = CurrentPlayerMover.GetComponent<PlayerHolder>();
-            }
-
-            // Get input controller
+            // Get services
             _inputController = ServiceLocator.Instance.GetService<InputController>();
             _thirdPersonCamera = ServiceLocator.Instance.GetService<ThirdPersonCamera>();
-
+            
             // Set initial control mode
+            PlayerHolder = _player;
+            CurrentPlayerMover = PlayerHolder.gameObject;
             _currentControlMode = ControlMode.Character;
             SetupCameras();
         }

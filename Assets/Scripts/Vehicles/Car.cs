@@ -29,9 +29,9 @@ namespace Vehicles
             if (_interactManager.CurrentControlMode == ControlMode.Character)
             {
                 float distance = (transform.position - _interactManager.CurrentPlayerMover.transform.position).sqrMagnitude;
-                Debug.Log($"Distance to {gameObject.name}: {distance}");
                 if (_distance >= distance)
                 {
+                    Debug.Log("Can Interact");
                     return true;
                 }
             }

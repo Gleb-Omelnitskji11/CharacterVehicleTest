@@ -1,33 +1,37 @@
+using Core;
 using UnityEngine;
 using Game.Input;
 using Game.Core;
 
-namespace Game.Car
+namespace Game.Vehicles
 {
     public class CarMoving : MonoBehaviour
     {
-        [Header("Wheels")] public WheelCollider frontLeft;
-        public WheelCollider frontRight;
-        public WheelCollider rearLeft;
-        public WheelCollider rearRight;
+        [Header("Wheels")]
+        [SerializeField] private WheelCollider _frontLeft;
+        [SerializeField] private WheelCollider _frontRight;
+        [SerializeField] private WheelCollider _rearLeft;
+        [SerializeField] private WheelCollider _rearRight;
+        
+        [Header("Wheel Meshes")]
+        [SerializeField] private Transform _frontLeftMesh;
+        [SerializeField] private Transform _frontRightMesh;
+        [SerializeField] private Transform _rearLeftMesh;
+        [SerializeField] private Transform _rearRightMesh;
 
-        [Header("Wheel Meshes")] public Transform frontLeftMesh;
-        public Transform frontRightMesh;
-        public Transform rearLeftMesh;
-        public Transform rearRightMesh;
-
-        [Header("Car Settings")] public float motorTorque = 1500f;
-        public float maxSteerAngle = 30f;
-        public float brakeForce = 3000f;
-
-        [Header("Suspension / Stability")] public float antiRollForce = 5000f;
+        [Header("Car Settings")]
+        [SerializeField] private float _motorTorque = 1500f;
+        [SerializeField] private float _maxSteerAngle = 30f;
+        [SerializeField] private float _brakeForce = 3000f;
+        [SerializeField] private float _antiRollForce = 5000f;
 
         private Rigidbody _rb;
 
         private Vector2 _directionInput;
         private bool _brakeInput;
+
         private InputController _inputController;
-        private GameManager _gameManager;
+        private InteractManager _interactManager;
 
         private void Awake()
         {
@@ -39,16 +43,16 @@ namespace Game.Car
         private void Start()
         {
             _inputController = ServiceLocator.Instance.GetService<InputController>();
-            _gameManager = ServiceLocator.Instance.GetService<GameManager>();
+            _interactManager = ServiceLocator.Instance.GetService<InteractManager>();
         }
 
         private void Update()
         {
-            if (_gameManager.CurrentControlMode != ControlMode.Car)
+            if (_interactManager.CurrentControlMode != ControlMode.Car)
                 return;
-            
+
             _directionInput = _inputController.MoveDirection;
-            _brakeInput = _inputController.IsBraking;
+            _brakeInput = _inputController.PressingBraking;
             UpdateWheelVisuals();
         }
 
@@ -57,37 +61,48 @@ namespace Game.Car
             HandleMotor();
             HandleSteering();
             HandleBrakes();
-            ApplyAntiRoll(frontLeft, frontRight);
-            ApplyAntiRoll(rearLeft, rearRight);
+            ApplyAntiRoll(_frontLeft, _frontRight);
+            ApplyAntiRoll(_rearLeft, _rearRight);
         }
+
+        public void EnterCar()
+        {
+            this.enabled = true;
+        }
+
+        public void ExitCar()
+        {
+            this.enabled = false;
+        }
+
 
         // ---------------- MOVEMENT ----------------
 
         private void HandleMotor()
         {
-            rearLeft.motorTorque = _directionInput.y * motorTorque;
-            rearRight.motorTorque = _directionInput.y * motorTorque;
+            _rearLeft.motorTorque = _directionInput.y * _motorTorque;
+            _rearRight.motorTorque = _directionInput.y * _motorTorque;
         }
 
         private void HandleSteering()
         {
-            float steerAngle = _directionInput.x * maxSteerAngle;
-            frontLeft.steerAngle = steerAngle;
-            frontRight.steerAngle = steerAngle;
+            float steerAngle = _directionInput.x * _maxSteerAngle;
+            _frontLeft.steerAngle = steerAngle;
+            _frontRight.steerAngle = steerAngle;
         }
 
         private void HandleBrakes()
         {
-            float force = _brakeInput ? brakeForce : 0f;
+            float force = _brakeInput ? _brakeForce : 0f;
 
-            frontLeft.brakeTorque = force;
-            frontRight.brakeTorque = force;
-            rearLeft.brakeTorque = force;
-            rearRight.brakeTorque = force;
+            _frontLeft.brakeTorque = force;
+            _frontRight.brakeTorque = force;
+            _rearLeft.brakeTorque = force;
+            _rearRight.brakeTorque = force;
         }
 
         // ---------------- SUSPENSION ----------------
-        
+
         private void ApplyAntiRoll(WheelCollider left, WheelCollider right)
         {
             bool leftGrounded = left.GetGroundHit(out WheelHit leftHit);
@@ -105,7 +120,7 @@ namespace Game.Car
             float travelR = (-right.transform.InverseTransformPoint(rightHit.point).y - right.radius)
                             / right.suspensionDistance;
 
-            float antiRoll = (travelL - travelR) * antiRollForce;
+            float antiRoll = (travelL - travelR) * _antiRollForce;
 
             _rb.AddForceAtPosition(-left.transform.up * antiRoll, left.transform.position);
             _rb.AddForceAtPosition(right.transform.up * antiRoll, right.transform.position);
@@ -115,10 +130,10 @@ namespace Game.Car
 
         private void UpdateWheelVisuals()
         {
-            UpdateWheel(frontLeft, frontLeftMesh);
-            UpdateWheel(frontRight, frontRightMesh);
-            UpdateWheel(rearLeft, rearLeftMesh);
-            UpdateWheel(rearRight, rearRightMesh);
+            UpdateWheel(_frontLeft, _frontLeftMesh);
+            UpdateWheel(_frontRight, _frontRightMesh);
+            UpdateWheel(_rearLeft, _rearLeftMesh);
+            UpdateWheel(_rearRight, _rearRightMesh);
         }
 
         private void UpdateWheel(WheelCollider collider, Transform mesh)

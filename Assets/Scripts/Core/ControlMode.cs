@@ -2,7 +2,7 @@ namespace Game.Core
 {
     public enum ControlMode
     {
-        Player,
+        Character,
         Car
     }
 }

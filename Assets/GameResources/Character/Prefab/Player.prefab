@@ -422,7 +422,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf71503f8bc31c64c9ea171ca9459235, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerMoving: {fileID: 3001639276752957750}
+  _characterMoving: {fileID: 3001639276752957750}
   _characterController: {fileID: 3218519604981305317}
   _animator: {fileID: 3312415039635563792}
 --- !u!114 &3001639276752957750

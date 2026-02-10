@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Game.Core
+namespace Core
 {
     public class ServiceLocator
     {

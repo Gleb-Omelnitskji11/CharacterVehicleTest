@@ -1,3 +1,4 @@
+using Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Core;
@@ -8,16 +9,16 @@ namespace Game.Input
     {
         private InputSystem_Actions _inputActions;
         private Vector2 _moveDirection;
-        private Vector2 _lookDirection;
-        private bool _isSprinting;
-        private bool _isInteracting;
-        private bool _isBraking;
+        private Vector2 _deltaLookDirection;
+        private bool _pressingSprinting;
+        private bool _pressingInteracting;
+        private bool _pressingBraking;
 
         public Vector2 MoveDirection => _moveDirection;
-        public Vector2 LookDirection => _lookDirection;
-        public bool IsSprinting => _isSprinting;
-        public bool IsInteracting => _isInteracting;
-        public bool IsBraking => _isBraking;
+        public Vector2 DeltaLookDirection => _deltaLookDirection;
+        public bool PressingSprinting => _pressingSprinting;
+        public bool PressingInteracting => _pressingInteracting;
+        public bool PressingBraking => _pressingBraking;
 
         private void Awake()
         {
@@ -71,73 +72,72 @@ namespace Game.Input
 
         private void OnLookPerformed(InputAction.CallbackContext context)
         {
-            _lookDirection = context.ReadValue<Vector2>();
+            _deltaLookDirection = context.ReadValue<Vector2>();
         }
 
         private void OnLookCanceled(InputAction.CallbackContext context)
         {
-            _lookDirection = Vector2.zero;
+            _deltaLookDirection = Vector2.zero;
         }
 
         private void OnSprintPerformed(InputAction.CallbackContext context)
         {
-            _isSprinting = true;
+            _pressingSprinting = true;
         }
 
         private void OnSprintCanceled(InputAction.CallbackContext context)
         {
-            _isSprinting = false;
+            _pressingSprinting = false;
         }
 
         private void OnInteractPerformed(InputAction.CallbackContext context)
         {
-            _isInteracting = true;
+            _pressingInteracting = true;
         }
 
         private void OnInteractCanceled(InputAction.CallbackContext context)
         {
-            _isInteracting = false;
+            _pressingInteracting = false;
         }
 
         private void OnBrakePerformed(InputAction.CallbackContext context)
         {
-            _isBraking = true;
+            _pressingBraking = true;
         }
 
         private void OnBrakeCanceled(InputAction.CallbackContext context)
         {
-            _isBraking = false;
+            _pressingBraking = false;
         }
 
         // Public methods for command pattern
         public void HandleMove(Vector2 direction, bool isSprinting)
         {
             _moveDirection = direction;
-            _isSprinting = isSprinting;
+            _pressingSprinting = isSprinting;
         }
 
         public void HandleLook(Vector2 lookDirection)
         {
-            _lookDirection = lookDirection;
+            _deltaLookDirection = lookDirection;
         }
 
         public void HandleInteract()
         {
-            _isInteracting = true;
-            ServiceLocator.Instance.GetService<GameManager>().HandleInteraction();
+            _pressingInteracting = true;
         }
 
         public void HandleBrake(bool isBraking)
         {
-            _isBraking = isBraking;
+            _pressingBraking = isBraking;
         }
 
         private void Update()
         {
             // Reset interaction flag after one frame
-            if (_isInteracting)
+            if (_pressingInteracting)
             {
-                _isInteracting = false;
+                _pressingInteracting = false;
             }
         }
     }

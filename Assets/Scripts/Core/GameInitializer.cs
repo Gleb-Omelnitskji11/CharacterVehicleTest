@@ -1,3 +1,4 @@
+using Core;
 using UnityEngine;
 using Game.Input;
 
@@ -40,7 +41,7 @@ namespace Game.Core
             }
 
             // Initialize GameManager
-            if (!ServiceLocator.Instance.HasService<GameManager>())
+            if (!ServiceLocator.Instance.HasService<InteractManager>())
             {
                 GameObject gameManagerObj;
                 
@@ -51,7 +52,7 @@ namespace Game.Core
                 else
                 {
                     gameManagerObj = new GameObject("GameManager");
-                    gameManagerObj.AddComponent<GameManager>();
+                    gameManagerObj.AddComponent<InteractManager>();
                 }
                 
                 DontDestroyOnLoad(gameManagerObj);

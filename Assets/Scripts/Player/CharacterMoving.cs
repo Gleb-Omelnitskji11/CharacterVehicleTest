@@ -1,10 +1,11 @@
+using Core;
 using UnityEngine;
 using Game.Input;
 using Game.Core;
 
 namespace Game.Player
 {
-    public class PlayerMoving : MonoBehaviour
+    public class CharacterMoving : MonoBehaviour
     {
         private static readonly int Sprint = Animator.StringToHash(ANIMATOR_Sprint);
         private static readonly int Moving = Animator.StringToHash(ANIMATOR_Moving);
@@ -24,46 +25,42 @@ namespace Game.Player
         [Header("Animation")]
         [SerializeField] private Animator _animator;
 
-        [Header("Interaction")]
-        [SerializeField] private float _interactionRadius = 3f;
-        [SerializeField] private LayerMask _carLayer;
-
         [Header("Other")]
         [SerializeField] private CharacterController _characterController;
+        
         private InputController _inputController;
         private Vector3 _velocity;
         private float _currentSpeed;
 
         private bool _animationMoving;
         private bool _animationSprint;
-        private GameManager _gameManager;
-        public bool CanInteract { get; private set; }
-        public GameObject NearbyCar { get; private set; }
+        private InteractManager _interactManager;
+        private Transform _cameraTransform;
 
         private void Start()
         {
             _inputController = ServiceLocator.Instance.GetService<InputController>();
             _currentSpeed = _walkSpeed;
-            _gameManager = ServiceLocator.Instance.GetService<GameManager>();
+            _interactManager = ServiceLocator.Instance.GetService<InteractManager>();
+            _cameraTransform = _interactManager.CurrentCamera;
         }
 
         private void Update()
         {
-            if (_gameManager.CurrentControlMode != ControlMode.Player)
+            if (_interactManager.CurrentControlMode != ControlMode.Character)
                 return;
 
             Vector3 moveDirection;
             HandleMovement(out moveDirection);
             HandleCharacterRotation(ref moveDirection);
             HandleGravity();
-            //CheckForNearbyCars();
             UpdateAnimations();
         }
 
         private void HandleMovement(out Vector3 moveDirection)
         {
             Vector2 moveInput = _inputController.MoveDirection;
-            _animationSprint = _inputController.IsSprinting;
+            _animationSprint = _inputController.PressingSprinting;
             _animationMoving = moveInput.sqrMagnitude > 0;
 
             // Calculate target speed
@@ -72,6 +69,8 @@ namespace Game.Player
 
             // Get camera-relative movement direction
             moveDirection = new Vector3(moveInput.x, 0, moveInput.y);
+            moveDirection = _cameraTransform.transform.forward * moveDirection.z + _cameraTransform.transform.right * moveDirection.x;
+            moveDirection.y = 0;
             moveDirection.Normalize();
 
             // Apply movement
@@ -108,23 +107,6 @@ namespace Game.Player
             );
         }
 
-        private void CheckForNearbyCars()
-        {
-            Collider[] hitColliders = Physics.OverlapSphere(transform.position, _interactionRadius, _carLayer);
-            CanInteract = false;
-            NearbyCar = null;
-
-            foreach (var collider in hitColliders)
-            {
-                if (collider.CompareTag("Car"))
-                {
-                    CanInteract = true;
-                    NearbyCar = collider.gameObject;
-                    break;
-                }
-            }
-        }
-
         private void UpdateAnimations()
         {
             _animator.SetBool(Moving, _animationMoving);
@@ -141,17 +123,5 @@ namespace Game.Player
             transform.position = exitPosition;
             gameObject.SetActive(true);
         }
-
-        // private void OnDrawGizmosSelected()
-        // {
-        //     // Draw interaction radius
-        //     Gizmos.color = Color.yellow;
-        //     Gizmos.DrawWireSphere(transform.position, _interactionRadius);
-        //
-        //     // Draw ground check
-        //     Gizmos.color = Color.green;
-        //     Vector3 spherePosition = transform.position + Vector3.up * _groundCheckDistance;
-        //     Gizmos.DrawWireSphere(spherePosition, _groundCheckDistance);
-        // }
     }
 }

@@ -1,17 +1,11 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Core.EventBus
 {
-    public class EventBus : MonoBehaviour, IEventBus
+    public class EventBus : IEventBus
     {
         private readonly Dictionary<Type, List<Delegate>> _listeners = new();
-
-        private void Awake()
-        {
-            ServiceLocator.Instance.RegisterService<IEventBus>(this);
-        }
 
         public void Subscribe<T>(Action<T> callback) where T : IEvent
         {

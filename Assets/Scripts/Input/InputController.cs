@@ -20,7 +20,6 @@ namespace Input
         private void Awake()
         {
             _inputActions = new InputSystem_Actions();
-            ServiceLocator.Instance.RegisterService<IInputController>(this);
         }
 
         private void OnEnable()

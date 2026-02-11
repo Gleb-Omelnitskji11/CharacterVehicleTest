@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Core
+namespace Input
 {
     public abstract class BaseMovementController : MonoBehaviour
     {

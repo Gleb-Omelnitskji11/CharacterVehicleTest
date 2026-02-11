@@ -1,6 +1,8 @@
+using Camera;
 using Core;
 using Input;
 using UnityEngine;
+using Zenject;
 
 namespace Vehicles
 {
@@ -35,9 +37,10 @@ namespace Vehicles
 
         public bool HasDriver => _driver != null;
 
-        private void Start()
+        [Inject]
+        public void Construct(IInputController inputController)
         {
-            _inputController = ServiceLocator.Instance.GetService<IInputController>();
+            _inputController = inputController;
             _inputController.OnHoldBraking += SetBraking;
         }
 

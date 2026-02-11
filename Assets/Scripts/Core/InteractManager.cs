@@ -3,6 +3,7 @@ using Input;
 using Player;
 using UnityEngine;
 using Vehicles;
+using Zenject;
 
 namespace Core
 {
@@ -21,14 +22,17 @@ namespace Core
         public PlayerHolder PlayerHolder { get; private set; }
         public bool ChosenInteract { get; private set; }
 
-        private void Awake()
+        [Inject]
+        public void Construct(IInputController inputController , GameStateManager gameStateManager)
         {
-            ServiceLocator.Instance.RegisterService<InteractManager>(this);
+            _inputController = inputController;
+            _gameStateManager = gameStateManager;
         }
 
         private void Start()
         {
             InitializeGame();
+            Subscribe();
         }
 
         private void Update()
@@ -41,15 +45,13 @@ namespace Core
             _inputController.OnPressingInteracting -= HandleInteraction;
         }
 
+        private void Subscribe()
+        {
+            _inputController.OnPressingInteracting += HandleInteraction;
+        }
+
         private void InitializeGame()
         {
-            // Get services
-            _inputController = ServiceLocator.Instance.GetService<IInputController>();
-            _gameStateManager = ServiceLocator.Instance.GetService<GameStateManager>();
-            
-            //subscribe
-            _inputController.OnPressingInteracting += HandleInteraction;
-
             // Set initial control mode
             PlayerHolder = _player;
             _gameStateManager.SetInitialState(_player.transform);
@@ -79,6 +81,7 @@ namespace Core
                 }
             }
 
+            _objectToInteract = null;
             return false;
         }
 

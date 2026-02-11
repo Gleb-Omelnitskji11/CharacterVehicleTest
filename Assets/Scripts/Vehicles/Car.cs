@@ -1,5 +1,6 @@
 using Core;
 using UnityEngine;
+using Zenject;
 
 namespace Vehicles
 {
@@ -17,9 +18,10 @@ namespace Vehicles
 
         private Transform _movingHolder;
 
-        private void Start()
+        [Inject]
+        public void Construct(GameStateManager gameStateManager)
         {
-            _gameStateManager = ServiceLocator.Instance.GetService<GameStateManager>();
+            _gameStateManager = gameStateManager;
         }
 
         public override bool CanInteract()
@@ -63,6 +65,7 @@ namespace Vehicles
             _movingHolder = _gameStateManager.CurrentPlayerTransform;
             _movingHolder.gameObject.SetActive(false);
             _carMoving.enabled = true;
+            _isDraven = true;
         }
         
         private void TryExitCar()
@@ -75,6 +78,7 @@ namespace Vehicles
             _movingHolder.transform.position = _exitPoint.position;
             _movingHolder.gameObject.SetActive(true);
             _carMoving.enabled = false;
+            _isDraven = false;
         }
     }
 }

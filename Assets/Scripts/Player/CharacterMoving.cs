@@ -2,6 +2,7 @@ using Camera;
 using Core;
 using Input;
 using UnityEngine;
+using Zenject;
 
 namespace Player
 {
@@ -15,9 +16,10 @@ namespace Player
 
         [Header("Movement Settings")]
         [SerializeField] private float _walkSpeed = 5f;
+
         [SerializeField] private float _sprintSpeed = 8f;
         [SerializeField] private float _rotationSpeed = 10f;
-        
+
         [Header("Gravity")]
         [SerializeField] private float _gravity = -20f;
         [SerializeField] private float _groundedStickForce = -2f;
@@ -27,7 +29,7 @@ namespace Player
 
         [Header("Other")]
         [SerializeField] private CharacterController _characterController;
-        
+
         private IInputController _inputController;
         private Vector3 _velocity;
         private float _currentSpeed;
@@ -36,19 +38,14 @@ namespace Player
         private bool _animationSprint;
         private Transform _cameraTransform;
 
+        [Inject]
+        public void Construct(IInputController inputController, ThirdPersonCamera cameraTransform)
+        {
+            _inputController = inputController;
+            _cameraTransform = cameraTransform.transform;
+        }
+
         private void Start()
-        {
-            GetServices();
-            Set();
-        }
-
-        private void GetServices()
-        {
-            _inputController = ServiceLocator.Instance.GetService<IInputController>();
-            _cameraTransform = ServiceLocator.Instance.GetService<ThirdPersonCamera>().transform;
-        }
-
-        private void Set()
         {
             _currentSpeed = _walkSpeed;
             _inputController.OnHoldSprinting += SetSprint;
@@ -84,7 +81,8 @@ namespace Player
 
             // Get camera-relative movement direction
             moveDirection = new Vector3(moveInput.x, 0, moveInput.y);
-            moveDirection = _cameraTransform.transform.forward * moveDirection.z + _cameraTransform.transform.right * moveDirection.x;
+            moveDirection = _cameraTransform.transform.forward * moveDirection.z +
+                            _cameraTransform.transform.right * moveDirection.x;
             moveDirection.y = 0;
             moveDirection.Normalize();
 
@@ -92,7 +90,7 @@ namespace Player
             Vector3 movement = moveDirection * _currentSpeed * Time.deltaTime;
             _characterController.Move(movement);
         }
-        
+
         private void HandleGravity()
         {
             if (_characterController.isGrounded)
@@ -107,7 +105,7 @@ namespace Player
 
             _characterController.Move(_velocity * Time.deltaTime);
         }
-        
+
         private void HandleCharacterRotation(ref Vector3 moveDirection)
         {
             if (moveDirection.sqrMagnitude < 0.001f)

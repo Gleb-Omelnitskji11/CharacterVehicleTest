@@ -2,6 +2,7 @@ using Core;
 using Core.EventBus;
 using Input;
 using UnityEngine;
+using Zenject;
 
 namespace Camera
 {
@@ -29,14 +30,16 @@ namespace Camera
         private IEventBus _eventBus;
         private IInputController _input;
 
-        private void Awake()
+        [Inject]
+        public void Construct(IInputController inputController, GameStateManager gameStateManager, IEventBus eventBus)
         {
-            ServiceLocator.Instance.RegisterService<ThirdPersonCamera>(this);
+            _input = inputController;
+            _gameStateManager = gameStateManager;
+            _eventBus = eventBus;
         }
 
         private void Start()
         {
-            GetServices();
             Subscribe();
             SetParams();
             UpdateSettings(null);
@@ -47,12 +50,6 @@ namespace Camera
             _eventBus.Unsubscribe<ControlModeChangedSignal>(UpdateSettings);
         }
 
-        private void GetServices()
-        {
-            _input = ServiceLocator.Instance.GetService<IInputController>();
-            _gameStateManager = ServiceLocator.Instance.GetService<GameStateManager>();
-            _eventBus = ServiceLocator.Instance.GetService<IEventBus>();
-        }
 
         private void SetParams()
         {
@@ -82,7 +79,7 @@ namespace Camera
                 CalculateInput();
             else
                 SnapBehindTarget();
-            
+
             HandlePositionAndRotation();
         }
 

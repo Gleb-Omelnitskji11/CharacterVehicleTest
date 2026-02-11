@@ -4,30 +4,19 @@ using UnityEngine;
 
 namespace Core
 {
-    public class GameStateManager : MonoBehaviour
+    public class GameStateManager
     {
-        [Header("State Management")]
-        [SerializeField] private ControlMode _initialControlMode = ControlMode.Character;
+        private ControlMode _initialControlMode = ControlMode.Character;
 
         public Transform CurrentPlayerTransform { get; private set; }
 
-        private IEventBus _eventBus;
+        private readonly IEventBus _eventBus;
 
         public ControlMode CurrentControlMode { get; private set; }
 
-        private void Awake()
+        public GameStateManager(IEventBus eventBus)
         {
-            ServiceLocator.Instance.RegisterService<GameStateManager>(this);
-        }
-
-        private void Start()
-        {
-            GetServices();
-        }
-
-        private void GetServices()
-        {
-            _eventBus = ServiceLocator.Instance.GetService<IEventBus>();
+            _eventBus = eventBus;
         }
 
         public void SetInitialState(Transform player)

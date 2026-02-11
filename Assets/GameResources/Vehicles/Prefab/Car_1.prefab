@@ -190,7 +190,7 @@ MonoBehaviour:
   _maxSteerAngle: 30
   _brakeForce: 3000
   _antiRollForce: 5000
-  _rb: {fileID: 0}
+  _rb: {fileID: 1975852948237939375}
 --- !u!54 &1975852948237939375
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -600,7 +600,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.79, y: 1, z: 4.2}
+  m_Size: {x: 1.75, y: 1, z: 4.2}
   m_Center: {x: 0, y: 0.13, z: 0}
 --- !u!4 &6540454508575657239 stripped
 Transform:

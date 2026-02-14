@@ -31,7 +31,6 @@ namespace Vehicles
                 float distance = (transform.position - _gameStateManager.CurrentPlayerTransform.position).sqrMagnitude;
                 if (_distance >= distance)
                 {
-                    Debug.Log("Can Interact");
                     return true;
                 }
             }
@@ -64,7 +63,7 @@ namespace Vehicles
         {
             _movingHolder = _gameStateManager.CurrentPlayerTransform;
             _movingHolder.gameObject.SetActive(false);
-            _carMoving.enabled = true;
+            _carMoving.SetDriver(true);
             _isDraven = true;
         }
         
@@ -77,7 +76,7 @@ namespace Vehicles
         {
             _movingHolder.transform.position = _exitPoint.position;
             _movingHolder.gameObject.SetActive(true);
-            _carMoving.enabled = false;
+            _carMoving.SetDriver(false);
             _isDraven = false;
         }
     }

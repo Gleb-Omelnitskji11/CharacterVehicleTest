@@ -19,6 +19,8 @@ namespace Input
 
         private void Awake()
         {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
             _inputActions = new InputSystem_Actions();
         }
 
